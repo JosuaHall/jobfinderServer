@@ -50,7 +50,7 @@ async function findSimilarDocuments(embedding) {
                   index: "default",
                   knnBeta: {
                     vector: embedding,
-                    path: "skillsembedding",
+                    path: "jobembedding",
                     k: 5
                   }
                 }
@@ -72,7 +72,7 @@ async function findSimilarDocuments(embedding) {
                 "company_name": 1,
                 "company_industry": 1,
                 "company_size": 1,
-                //"skillsembedding": 1,
+                "skillsembedding": 1,
                 "score": { $meta: "searchScore" }
               }
             }
@@ -95,7 +95,8 @@ async function findSimilarDocuments(embedding) {
 
 // Main function to get embeddings and find similar documents
 async function main() {
-    const query = 'r, scala, powershell, c++, java, python, tableau, sql, powerbi, c'; // Replace with your query.
+    const query = "Software Engineer" + "Software Engineer I" + "Full-time" + "Entry level" + "5" + "mongo, oracle, microsoft, css, javascript, html, agile, mysql, coding,…" + "United States"
+    // Replace with your query.
     
     try {
         // Get the embedding for the query
