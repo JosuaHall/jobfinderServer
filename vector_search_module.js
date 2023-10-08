@@ -1,38 +1,32 @@
 // Importing required modules
-const axios = require('axios');
-const MongoClient = require('mongodb').MongoClient;
+require('dotenv').config();
 
-// Function to get embeddings from OpenAI API
-async function getEmbedding(query) {
-    // Define the OpenAI API url and key.
-    const url = 'https://api.openai.com/v1/embeddings';
-    const openai_key = ''; // Replace with your OpenAI key.
+const OpenAI = require('openai');
+const MongoClient = require('mongodb').MongoClient;
+const openai = new OpenAI(process.env.OPENAI_API_KEY);
+
+
+// Function to get document from MongoDB
+async function getDocumentFromDB(userId) {
+    const url = process.env.MONGODB_URL; // Use MongoDB URL from .env file
+    const client = new MongoClient(url);
     
-    // Call OpenAI API to get the embeddings.
-    // Axios is used to make HTTP requests
-    let response = await axios.post(url, {
-        input: query,
-        model: "text-embedding-ada-002"
-    }, {
-        headers: {
-            'Authorization': `Bearer ${openai_key}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    
-    // Check if the request was successful
-    if(response.status === 200) {
-        // Return the embedding from the response
-        return response.data.data[0].embedding;
-    } else {
-        // Throw an error if the request was not successful
-        throw new Error(`Failed to get embedding. Status code: ${response.status}`);
+    try {
+        await client.connect();
+        const db = client.db('test');
+        const collection = db.collection('profiles');
+        const document = await collection.findOne({user_id: userId});
+        return document;
+    } catch(err) {
+        console.error(err);
+    } finally {
+        await client.close();
     }
 }
 
 // Function to find similar documents in MongoDB
-async function findSimilarDocuments(embedding) {
-    const url = ''; // Replace with your MongoDB url.
+async function findSimilarDocuments(vector) {
+    const url = process.env.MONGODB_URL; // Use MongoDB URL from .env file
     const client = new MongoClient(url);
     
     try {
@@ -43,15 +37,15 @@ async function findSimilarDocuments(embedding) {
         const db = client.db('test'); // Replace with your database name.
         const collection = db.collection('jobsample2'); // Replace with your collection name.
         
-        // Query for similar documents using the embedding
+        // Query for similar documents using the vector
         const cursor = await collection.aggregate([
             {
                 $search: {
                   index: "default",
                   knnBeta: {
-                    vector: embedding,
+                    vector: vector,
                     path: "jobembedding",
-                    k: 5
+                    k: 3
                   }
                 }
             },
@@ -72,8 +66,8 @@ async function findSimilarDocuments(embedding) {
                 "company_name": 1,
                 "company_industry": 1,
                 "company_size": 1,
-                "skillsembedding": 1,
-                "score": { $meta: "searchScore" }
+                "jobembedding": 1,
+                "score": { $multiply: [{ $meta: "searchScore" }, 100] }
               }
             }
               
@@ -93,21 +87,123 @@ async function findSimilarDocuments(embedding) {
     }
 }
 
-// Main function to get embeddings and find similar documents
-async function main() {
-    const query = "Software Engineer" + "Software Engineer I" + "Full-time" + "Entry level" + "5" + "mongo, oracle, microsoft, css, javascript, html, agile, mysql, coding,…" + "United States"
-    // Replace with your query.
+// Function to log a user profile from the profiles collection
+async function logUserProfile(userId) {
+    const url = process.env.MONGODB_URL; // Use MongoDB URL from .env file
+    const client = new MongoClient(url);
     
     try {
-        // Get the embedding for the query
-        const embedding = await getEmbedding(query);
-        // Find similar documents using the embedding
-        const documents = await findSimilarDocuments(embedding);
+        // Connect to the MongoDB client
+        await client.connect();
         
-        // Log the documents
-        console.log(documents);
+        // Get the database and collection
+        const db = client.db('test'); // Replace with your database name.
+        const collection = db.collection('profiles'); // Replace with your collection name.
+        
+        // Query to get the user profile
+        const doc = await collection.findOne({user_id: userId});
+
+        // Define the fields to log
+        const fields = [
+            "user_id",
+            "city",
+            "state",
+            "technical_skills",
+            "job_type_pref",
+            "target_salary",
+            "yrs_experience",
+            "desired_role",
+            "pref_city",
+            "pref_state",
+            "work_experience",
+            //"profileembedding",
+        ];
+
+        // Log each field on a new line with its name
+        for (const field of fields) {
+            console.log(`${field}: ${doc[field]}`);
+        }
     } catch(err) {
         // Log any errors
+        console.error(err);
+    } finally {
+        // Close the MongoDB client
+        await client.close();
+    }
+}
+
+/**
+ * Generates a detailed analysis and reasoning on the fit between a user profile and a job posting using the GPT-4 model,
+ * providing a personalized and structured output to the user, including a match score.
+ */
+async function summarizeComparison(userProfile, jobDetail) {
+    // Remove the embedding fields as they are not needed for the comparison.
+    delete userProfile.profileembedding;
+    delete jobDetail.jobembedding;
+
+    // Adjust the score calculation based on the range of values and format it to two decimal places.
+    const matchScore = (jobDetail.score <= 1 ? jobDetail.score * 100 : jobDetail.score).toFixed(2);
+
+    // Break down the prompt into an array of strings, each representing a section.
+    const promptSections = [
+        `Match Score:\n- ${matchScore}%\n`,
+        `Technical Skills:\n- Discuss the alignment of technical skills between the profile and job posting.\n`,
+        `Experience:\n- Discuss the alignment of experience between the profile and job posting.\n`,
+        `Preferences:\n- Discuss the alignment of job preferences between the profile and job posting.\n`,
+        `Job Responsibilities:\n- Discuss the alignment of past job responsibilities with the job posting requirements.\n`,
+        `Strengths and Alignment:\n- Highlight any areas of particular strength or alignment.\n`,
+        `Suggestions for Improvement:\n- Provide suggestions for the user to be better qualified for both the job they matched with and the job they prefer to have.\n`,
+        `Conclude with a summary statement on the fit for the role.`
+    ];
+
+    // Join the array into a single string with a newline character in between each section.
+    const promptContent = promptSections.join('\n');
+
+    // Concatenate the prompt content with the profile and job information to form the complete message content.
+    const messageContent = `${promptContent}\nProfile Information: ${JSON.stringify(userProfile)}\nJob Information: ${JSON.stringify(jobDetail)}`;
+
+    console.log('Input Text:', messageContent);  // Log the complete message content to check formatting
+
+    try {
+        // Send the formatted text to GPT-4 to generate a detailed job fitting analysis.
+        const summary = await openai.chat.completions.create({
+            messages: [
+                {
+                    role: 'user',
+                    content: messageContent
+                },
+                { role: 'assistant', content: "" }  // Empty content as the user message already contains all necessary information
+            ],
+            model: 'gpt-4'
+        });
+
+        console.log('API Response:', summary);  // Log the entire API response to check for errors or unexpected format
+        console.log(summary.choices[0].message.content.trim());  // Log the detailed job fitting analysis to the console
+    } catch (err) {
+        console.error(err);  // Log any errors that occur during the process
+    }
+}
+
+// Updated main function
+async function main() {
+    try {
+        const userId = "User3";
+
+        await logUserProfile(userId);
+        const userProfileDoc = await getDocumentFromDB(userId);
+        
+        if(userProfileDoc && userProfileDoc.profileembedding) {
+            const documents = await findSimilarDocuments(userProfileDoc.profileembedding);
+            console.log(documents);
+            
+            if(documents.length > 0) {
+                const topMatchingJob = documents[0];
+                await summarizeComparison(userProfileDoc, topMatchingJob);
+            }
+        } else {
+            console.error("Vector is undefined");
+        }
+    } catch(err) {
         console.error(err);
     }
 }
