@@ -35,7 +35,7 @@ async function findSimilarDocuments(vector) {
         
         // Get the database and collection
         const db = client.db('test'); // Replace with your database name.
-        const collection = db.collection('jobsample2'); // Replace with your collection name.
+        const collection = db.collection('jobs'); // Replace with your collection name.
         
         // Query for similar documents using the vector
         const cursor = await collection.aggregate([
