@@ -169,10 +169,20 @@ async function summarizeComparison(userProfile, jobDetail) {
         const summary = await openai.chat.completions.create({
             messages: [
                 {
+                    role: 'system',
+                    content: `
+                        You are a highly experienced information technology related career advisor  
+                        analyzing the profile of a tech job seeker in relation to a specific job posting. 
+                        Provide a detailed analysis, including suggestions for improvement 
+                        to better match the job posting, while addressing the tech job seeker directly.
+                        Make sure to discuss the match score in the first part of the analysis. Address
+                        the job seeker as "you" without variations.
+                    `
+                },
+                {
                     role: 'user',
                     content: messageContent
-                },
-                { role: 'assistant', content: "" }  // Empty content as the user message already contains all necessary information
+                }
             ],
             model: 'gpt-4'
         });
