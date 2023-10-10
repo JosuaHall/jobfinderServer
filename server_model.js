@@ -64,4 +64,73 @@ const JobSchema = new Schema({
     },
 })
 
-module.exports = Job = mongoose.model("jobsample2", JobSchema);
+module.exports = Job = mongoose.model("jobs", JobSchema);
+
+const ProfileSchema = new Schema({
+    user_id: {
+        type: String,
+        required: true,
+    },
+    street_num: {
+        type: Int32,
+        required: true,
+    },
+    street_name: {
+        type: String,
+        required: true,
+    },
+    city: {
+        type: String,
+        required: true,
+    },
+    state: {
+        type: String,
+        required: true,
+    },
+    zip: {
+        type: Int32,
+        required: true,
+    },
+    technical_skills: {
+        type: String,
+        required: true,
+    },
+    job_type_pref: {
+        type: String,
+        required: true,
+    },
+    target_salary: {
+        type: Number,
+        required: true,
+    },
+    yrs_experience: {
+        type: Number,
+        required: true,
+    },
+    desired_role: {
+        type: String,
+        required: true,
+    },
+    pref_city: {
+        type: String,
+        required: true,
+    },
+    pref_state: {
+        type: String,
+        required: true,
+    },
+    work_experience: {
+        type: String,
+        required: true,
+    },
+    phone_num: {
+        type: String,
+        required: true,
+    },
+    dob: {
+        type: Date,
+        required: true,
+    },
+});
+
+module.exports = Profile = mongoose.model("profiles", ProfileSchema);
