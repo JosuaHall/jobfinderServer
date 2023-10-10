@@ -24,29 +24,35 @@ async function getDocumentFromDB(userId) {
     }
 }
 
-// Function to find similar documents in MongoDB
-async function findSimilarDocuments(vector) {
-    const url = process.env.MONGODB_URL; // Use MongoDB URL from .env file
+// Updated Function to find similar documents in MongoDB
+async function findSimilarDocuments(vector, yrs_experience) {
+    const url = process.env.MONGODB_URL;
     const client = new MongoClient(url);
     
     try {
-        // Connect to the MongoDB client
         await client.connect();
+        const db = client.db('test');
+        const collection = db.collection('jobs');
         
-        // Get the database and collection
-        const db = client.db('test'); // Replace with your database name.
-        const collection = db.collection('jobs'); // Replace with your collection name.
-        
-        // Query for similar documents using the vector
         const cursor = await collection.aggregate([
             {
                 $search: {
-                  index: "default",
-                  knnBeta: {
-                    vector: vector,
-                    path: "jobembedding",
-                    k: 3
-                  }
+                    index: "default",
+                    knnBeta: {
+                        vector: vector,
+                        path: "jobembedding",
+                        k: 3,
+                        filter: {
+                            compound: {
+                                must: [{
+                                    range: {
+                                        path: "years_experience",
+                                        lte: yrs_experience
+                                    }
+                                }]
+                            }
+                        }
+                    }
                 }
             },
             {
@@ -59,7 +65,7 @@ async function findSimilarDocuments(vector) {
                 "job_title_additional_info": 1,
                 "job_position_type": 1,
                 "job_position_level": 1,
-                "years_experience": 4,
+                "years_experience": 1,
                 "job_skills": 1,
                 "job_location": 1,
                 "number_of_applicants": 1,
@@ -70,22 +76,17 @@ async function findSimilarDocuments(vector) {
                 "score": { $multiply: [{ $meta: "searchScore" }, 100] }
               }
             }
-              
         ]);
 
-        // Convert the cursor to an array of documents
         const documents = await cursor.toArray();
-        
-        // Return the documents
         return documents;
     } catch(err) {
-        // Log any errors
         console.error(err);
     } finally {
-        // Close the MongoDB client
         await client.close();
     }
 }
+
 
 // Function to log a user profile from the profiles collection
 async function logUserProfile(userId) {
@@ -203,7 +204,7 @@ async function main() {
         const userProfileDoc = await getDocumentFromDB(userId);
         
         if(userProfileDoc && userProfileDoc.profileembedding) {
-            const documents = await findSimilarDocuments(userProfileDoc.profileembedding);
+            const documents = await findSimilarDocuments(userProfileDoc.profileembedding, userProfileDoc.yrs_experience);
             console.log(documents);
             
             if(documents.length > 0) {
