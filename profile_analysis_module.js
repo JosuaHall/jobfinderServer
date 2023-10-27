@@ -27,16 +27,16 @@ async function analyzeUserProfile(userProfile) {
     // Remove the profileembedding field before constructing the message content
     delete userProfile.profileembedding;
 
-    const promptSections = [
-        "Profile Analysis:",
-        "- Analyze the technical skills, experience, and preferences.",
-        "- Identify strengths and areas for improvement.",
-        "- Provide suggestions to enhance the profile for better job matching and job searching."
-    ];
-
-    const promptContent = promptSections.join('\n');
-
-    const messageContent = `${promptContent}\nProfile Information: ${JSON.stringify(userProfile)}`;
+    const messageContent = `
+        Analyze the following profile and provide a structured response in JSON format:
+        Profile Information: ${JSON.stringify(userProfile)}
+        Sections:
+        1. Technical Skills: Discuss the technical skills listed in the profile and evaluate their relevance to the current job market.
+        2. Experience: Evaluate the candidate's work experience and its relevance to the job roles they are interested in.
+        3. Preferences: Discuss the candidate's job preferences and how well they align with their skills and experience.
+        4. Strengths: Identify and discuss the strengths evident in the profile.
+        5. Areas for Improvement: Identify and discuss areas where the candidate could improve to increase their job market relevance.
+    `;
 
     console.log('Input Text:', messageContent);  // Log the complete message content to check formatting
 
@@ -55,19 +55,20 @@ async function analyzeUserProfile(userProfile) {
                 {
                     role: 'user',
                     content: messageContent
-                },
-                { role: 'assistant', content: "" }  // Empty content as the user message already contains all necessary information
+                }
             ],
             model: 'gpt-4'
         });
 
         console.log('API Response:', analysis);  // Log the entire API response to check for errors or unexpected format
-        console.log(analysis.choices[0].message.content.trim());  // Log the profile analysis to the console
+        
+        const structuredResponse = JSON.parse(analysis.choices[0].message.content.trim());
+        console.log(structuredResponse);  // Log the structured response to the console
+
     } catch (err) {
         console.error(err);  // Log any errors that occur during the process
     }
 }
-
 
 // Export the analyzeUserProfile function
 module.exports = {
