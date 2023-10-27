@@ -182,18 +182,36 @@ async function summarizeComparison(userProfile, jobDetail) {
                 },
                 {
                     role: 'user',
-                    content: messageContent
+                    content: messageContent  // Revert to sending messageContent as before
                 }
             ],
             model: 'gpt-4'
         });
 
         console.log('API Response:', summary);  // Log the entire API response to check for errors or unexpected format
-        console.log(summary.choices[0].message.content.trim());  // Log the detailed job fitting analysis to the console
+        
+        // Assume GPT-4 response follows the order of the sections in the prompt
+        const responseText = summary.choices[0].message.content.trim();
+        const responseSections = responseText.split('\n\n');  // Each section is separated by two newline characters
+        
+        const structuredResponse = {
+            matchScore: responseSections[0],
+            technicalSkills: responseSections[1],
+            experience: responseSections[2],
+            preferences: responseSections[3],
+            jobResponsibilities: responseSections[4],
+            strengthsAndAlignment: responseSections[5],
+            suggestionsForImprovement: responseSections[6],
+            conclusion: responseSections[7]
+        };
+
+        console.log(structuredResponse);  // Log the structured response to the console
+
     } catch (err) {
         console.error(err);  // Log any errors that occur during the process
     }
 }
+
 
 // Updated main function
 async function main() {
