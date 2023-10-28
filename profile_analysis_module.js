@@ -69,11 +69,11 @@ async function analyzeUserProfile(userProfile) {
         const responseSections = responseText.split('\n\n');  // Assuming each section is separated by two newline characters
         
         const structuredResponse = {
-            technicalSkills: responseSections[1],
-            experience: responseSections[2],
-            preferences: responseSections[3],
-            strengths: responseSections[4],
-            areasForImprovement: responseSections[5]
+            technicalSkills: responseSections[0],
+            experience: responseSections[1],
+            preferences: responseSections[2],
+            strengths: responseSections[3],
+            areasForImprovement: responseSections[4]
         };
 
         console.log(structuredResponse);  // Log the structured response to the console
