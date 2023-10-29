@@ -11,13 +11,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const corsOptions = {
-  origin: "https://jobfinderai.netlify.app",
-
+/*const corsOptions = {
+  //origin: "https://jobfinderai.netlify.app",
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
-app.use(cors(corsOptions));
+app.use(cors(corsOptions));*/
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
