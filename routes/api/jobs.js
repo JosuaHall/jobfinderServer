@@ -1,3 +1,8 @@
+// jobs.js
+// Created on: October 1, 2023
+// Description: defines the api routes for job related data
+// - routes of the server
+
 const express = require("express");
 const router = express.Router();
 require("dotenv").config();

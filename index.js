@@ -1,3 +1,11 @@
+// index.js
+// Created on: October 10, 2023
+// Description: this file sets up the server
+// - establishes database connection
+// - defines routes
+// - defines listening port
+// - other necessary configurations
+
 const express = require("express");
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -12,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const corsOptions = {
-  origin: "https://jobfinderai.netlify.app",
+  origin: "http://localhost:3000",
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };

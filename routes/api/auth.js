@@ -1,3 +1,8 @@
+// auth.js
+// Created on: October 1, 2023
+// Description: defines the api routes for authentification and user related data
+// - routes of the server
+
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");

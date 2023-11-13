@@ -1,3 +1,8 @@
+// profile_analysis_module.js
+// Created on: October 10, 2023
+// Description:
+// -> uses GPT-4 large language modal of OpenAI to get a detailed analysis of a provided user document from the database
+
 // Importing required modules
 require("dotenv").config();
 const OpenAI = require("openai");

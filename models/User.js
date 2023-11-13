@@ -1,3 +1,8 @@
+// User.js
+// Created on: October 1, 2023
+// Description: Mongoose modal for the UserSchema
+// -> defines the properties of the user database document
+
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 

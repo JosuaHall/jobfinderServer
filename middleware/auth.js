@@ -1,3 +1,7 @@
+// auth.js
+// Created on: October 1, 2023
+// Description: This middleware checks if a valid json web token exists when making a private route request
+
 // Import required modules
 const jwt = require("jsonwebtoken");
 require("dotenv").config(); // Load environment variables from a .env file

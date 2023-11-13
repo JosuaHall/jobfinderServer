@@ -1,3 +1,8 @@
+// Job.js
+// Created on: October 1, 2023
+// Description: Mongoose modal for the JobSchema
+// -> defines the properties of the job database document
+
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 

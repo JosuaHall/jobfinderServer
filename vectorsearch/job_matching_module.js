@@ -1,3 +1,9 @@
+// job_matching_module.js
+// Created on: October 10, 2023
+// Description: uses vector search technology to find the closes matching job related to
+//  user profiles and job entries.
+// -> also uses GPT-4 large language modal of OpenAI
+
 // Importing required modules
 require("dotenv").config();
 const Job = require("../models/Job");

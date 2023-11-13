@@ -1,3 +1,8 @@
+// Profile.js
+// Created on: October 1, 2023
+// Description: Mongoose modal for the Profile
+// -> defines the properties of the profile database document
+
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
